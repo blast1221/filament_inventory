@@ -4,23 +4,20 @@ const AIRTABLE_TABLE_NAME = "Inventory Items";
 
 async function loadInventory() {
     try {
-        const response = await fetch (
-            `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`,
-            {
-                
-            }
-        );
+        const response = await fetch ("http://localhost:3000/inventory");
         const data = await response.json();
 
-        window.cachedItems = data.records.map(record => ({
-            color: record.fields.Color,
-            finish: record.fields.Finish,
-            description: record.fields.Description,
-            image: record.fields.Image || "images/placeholder.jpg",
-            inStock: record.fields.inStock || false
+        const items = data.records.map(record => ({
+            color: record.fields.Color || "",
+            finish: record.fields.Finish || "",
+            description: record.fields.Description || "",
+            image: record.fields.Image || "",
+            inStock: record.fields.inStock === true
         }));
+        
+        window.cachedItems = items;
 
-        renderInventory(window.cachedItems);
+        renderInventory(items);
     } catch (err) {
         console.error("Error loading inventory:", err);
     }
@@ -28,6 +25,11 @@ async function loadInventory() {
 
 function renderInventory(items) {
     const container = document.getElementById("inventory");
+    if (!container) {
+        console.error("No element with id 'inventory' found in the DOM.");
+        return;
+    }
+
     container.innerHTML = "";
 
     items.forEach(item => {

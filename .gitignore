@@ -1,0 +1,30 @@
+# Test ignore
+# Node Modules 
+node_modules/
+
+# Logs
+*.log
+
+# Environment Files
+.env
+*.env
+
+# Build output
+dist/
+build/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# OneDrive conflict files
+*.tmp
+*.lnk
+*.sync
+*.sync-conflict*
+
+
+test_ignore_file.txt

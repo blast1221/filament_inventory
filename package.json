@@ -1,5 +1,28 @@
 {
+  "name": "filament_inventory_site",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Crafted 3D Printing – Filament Inventory Site\r A web-based inventory and gallery for managing 3D printing filament and showcasing printed projects. Built with HTML, CSS, and modular JavaScript, with Airtable integration for live inventory data.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blast1221/filament_inventory.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "airtable": "^0.12.2"
-  }
+    "airtable": "^0.12.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  },
+  "bugs": {
+    "url": "https://github.com/blast1221/filament_inventory/issues"
+  },
+  "homepage": "https://github.com/blast1221/filament_inventory#readme"
 }
