@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <title> Filament Inventory</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="Crafted 3D.ico" type="image/x-icon">
+</head>
+<header>
+    <h1>Available Colors</h1>
+    <p>Please choose from the available colors below!</p>
+</header>
+<body>
+    <nav>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="inventory.html" class="active">Inventory</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="meettheteam.html">Meet the Team</a></li>
+        </ul>
+    </nav>
+
+
+    <main>
+        <h2>Filament Inventory</h2>
+        <div id="filter-buttons">
+            <button onclick="showFinish('All')">All</button>
+            <button onclick="showFinish('Matte')">Matte</button>
+            <button onclick="showFinish('Gradient')">Gradient</button>
+            <!-- add more finish types here as needed -->
+        </div>
+
+        <div id="inventory"></div>
+    </main>
+
+    <script src="js/inventory.js?v=1.0.0"></script>
+</body>
