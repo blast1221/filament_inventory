@@ -4,7 +4,7 @@ const AIRTABLE_TABLE_NAME = "Inventory Items";
 
 async function loadInventory() {
     try {
-        const response = await fetch ("http://localhost:3000/inventory");
+        const response = await fetch ("https://filament-inventory.onrender.com/inventory");
         const data = await response.json();
 
         const items = data.records.map(record => ({
