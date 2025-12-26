@@ -249,6 +249,13 @@ section.two-column {
   justify-items: center;
 }
 
+.team-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .team-card:hover {
   transform: translateY(-5px);
 }
