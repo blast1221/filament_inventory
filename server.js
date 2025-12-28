@@ -20,7 +20,16 @@ app.get("/inventory", async (req, res) => {
     });
 
     const data = await response.json();
-    res.json(data);
+    
+    const formatted = data.records.map(record => ({
+        id: record.id,
+        color: record.fields.Color,
+        finish: record.fields.Finish,
+        description: record.fields.Description,
+        inStock: record.fields.inStock,
+        colorHex: record.fields.ColorHex
+    }));
+    res.json(formatted);
 });
 
 app.listen(port, () => {
