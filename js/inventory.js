@@ -12,6 +12,8 @@ async function loadInventory() {
             colorHex3: record.colorHex3 || "",
             inStock: record.inStock === true
         }));
+
+        items.sort((a, b) => a.color.localeCompare(b.color));
         
         window.cachedItems = items;
 
