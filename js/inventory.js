@@ -50,6 +50,8 @@ function getSwatchStyle(item) {
             );
         `;
     }
+
+    return `background-color: #ccc;`;
 }
 
 function renderInventory(items) {
