@@ -27,7 +27,9 @@ app.get("/inventory", async (req, res) => {
         finish: record.fields.Finish,
         description: record.fields.Description,
         inStock: record.fields.inStock,
-        colorHex: record.fields.ColorHex
+        colorHex: record.fields.ColorHex,
+        colorHex2: record.fields.colorHex2,
+        colorHex3: record.fields.ColorHex3
     }));
     res.json(formatted);
 });

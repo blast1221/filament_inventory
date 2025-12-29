@@ -7,7 +7,9 @@ async function loadInventory() {
             color: record.color || "",
             finish: record.finish || "",
             description: record.description || "",
-            colorHex: record.colorHex || "",
+            colorHex1: record.colorHex1 || "",
+            colorHex2: record.colorHex2 || "",
+            colorHex3: record.colorHex3 || "",
             inStock: record.inStock === true
         }));
         
@@ -16,6 +18,37 @@ async function loadInventory() {
         renderInventory(items);
     } catch (err) {
         console.error("Error loading inventory:", err);
+    }
+}
+
+function getSwatchStyle(item) {
+    const c1 = item.colorHex1;
+    const c2 = item.colorHex2;
+    const c3 = item.colorHex3;
+
+    if (c1 && !c2) {
+        return `background-color: ${c1};`;
+    }
+
+    if (c1 && c2 && !c3) {
+        return `
+            background: linear-gradient(
+            to right,
+            ${c1} 50%,
+            ${c2} 50%
+            );
+        `;
+    }
+
+    if (c1 && c2 && c3) {
+        return `
+            background: linear-gradient(
+                to right,
+                ${c1},
+                ${c2},
+                ${c3}
+            );
+        `;
     }
 }
 
@@ -32,7 +65,7 @@ function renderInventory(items) {
         const div = document.createElement("div");
         div.className = "inventory-item";
         div.innerHTML = `
-            <div class="swatch" style="background-color: ${item.colorHex};"></div>
+            <div class="swatch" style="${getSwatchStyle(item)}"></div>
             <h3>${item.color || "Unknown Color"} ${item.inStock ? "" : "(Out of Stock)"}</h3>
             <p>Finish: ${item.finish || "Unknown Finish"}</p>
             <p>${item.description || ""}</p>

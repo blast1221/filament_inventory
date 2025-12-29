@@ -226,7 +226,15 @@ section.two-column {
   height: 40px;
   border-radius: 6px;
   border: 1px solid #ccc;
-  margin: 0 auto 10px;
+  margin-bottom: 8px;
+  background-size: cover;
+  background-position: center;
+}
+
+.swatch:hover {
+  transform: scale(1.05);
+  transition: 0.15s ease;
+  border-color: #999;
 }
 
 .team-intro {
