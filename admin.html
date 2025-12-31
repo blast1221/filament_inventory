@@ -131,6 +131,20 @@
         </div>
 
         <button type="submit" id="submitBtn">Upload to Site</button>
+
+        <hr style="margin: 30px 0;">
+        <h3>Search Current Inventory</h3>
+
+        <div class="admin-controls" style="margin-bottom: 20px;">
+            <input type="text" id="adminSearchInput" placeholder="Search colors already in Supabase..."
+                style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 10px; box-sizing: border-box;">
+
+            <button id="adminRefreshBtn" type="button" style="width: 100%; padding: 12px; background: #3B82F6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                🔄 Sync & View Current Colors
+            </button>
+        </div>
+
+        <div id="adminInventoryResults" style="margin-top: 20px;"></div>
     </form>
 </div>
 
@@ -142,7 +156,7 @@
         picker.addEventListener('input', () => {
             text.value = picker.value.toUpperCase();
         });
-
+    
         text.addEventListener('input', () => {
             if(/^#[0-9A-F]{6}$/i.test(text.value)) {
                 picker.value = text.value;
@@ -164,7 +178,9 @@
         const getVal = (id) => {
             const el = document.getElementById(id);
             if (!el) return null;
+
             const val = el.value.trim();
+
             return (/^#[0-9A-F]{6}$/i.test(val)) ? val : null;
         };
 
@@ -178,7 +194,7 @@
             colorHex2: getVal('text2'),
             colorHex3: getVal('text3'),
             inStock: true
-        };
+        };        
 
         try {
             const response = await fetch("/inventory", {
@@ -195,6 +211,11 @@
                 document.getElementById('picker1').value = "#3b82f6";
                 document.getElementById('picker2').value = "#cccccc";
                 document.getElementById('picker3').value = "#cccccc";
+
+                document.getElementById('text1').value = "";
+                document.getElementById('text2').value = "";
+                document.getElementById('text3').value = "";
+                
             } else {
                 const errorData = await response.json();
                 console.error("Supabase Error Details:", errorData);
@@ -210,6 +231,57 @@
             submitBtn.innerText = "Upload to Site";
             }
     });
+
+    // --- NEW ADMIN READ/SEARCH CODE STARTS HERE ---
+        async function fetchForAdmin() {
+            const btn = document.getElementById('adminRefreshBtn');
+            btn.innerText = "Syncing...";
+
+            try {
+                const response = await fetch("/inventory");
+                const data = await response.json();
+                window.adminItems = data; // This stores data for searching
+                renderAdminResults(data);
+            } catch (err) {
+                console.error("Failed to sync:", err);
+                alert("Sync failed. Check connection.");
+            } finally {
+                btn.innerText ="🔄 Sync & View Current Colors";
+            }
+        }
+
+        function renderAdminResults(items) {
+            const container = document.getElementById('adminInventoryResults');
+            if (!items || items.length === 0) {
+                container.innerHTML = "<p style='color: gray;'>No colors found.</p>";
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong>${item.color}</strong>
+                        <span style="font-size: 0.8em; background: #eee; padding: 2px 6px; border-radius: 4px;">${item.finish}</span>
+                    </div>
+                    <div style="font-size: 0.85em; color: #666;">
+                        Hex: ${item.colorHex1} ${item.colorHex2 ? '| ' + item.colorHex2 : ''}
+                    </div>
+                </div>
+                `).join('');
+        }
+
+        document.getElementById('adminSearchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const items = window.adminItems || [];
+            const filtered = items.filter(i =>
+                i.color.toLowerCase().includes(term) ||
+                i.finish.toLowerCase().includes(term)
+            );
+            renderAdminResults(filtered);
+        });
+
+        document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
+
 </script>
 
 </body>
