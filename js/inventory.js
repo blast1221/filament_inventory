@@ -3,7 +3,8 @@ async function loadInventory() {
         const response = await fetch ("https://filament-inventory.onrender.com/inventory");
         const data = await response.json();
 
-        const items = data.map(record => ({
+        const allItems = data.map(record => ({
+            id: record.id,
             color: record.color || "",
             finish: record.finish || "",
             description: record.description || "",
@@ -12,12 +13,14 @@ async function loadInventory() {
             colorHex3: record.colorHex3 || "",
             inStock: record.inStock === true
         }));
-
-        items.sort((a, b) => a.color.localeCompare(b.color));
         
-        window.cachedItems = items;
+        const inStockItems = allItems.filter(item => item.inStock === true);
 
-        renderInventory(items);
+        inStock.sort((a, b) => a.color.localeCompare(b.color));
+        
+        window.cachedItems = inStockItems;
+
+        renderInventory(inStockItems);
     } catch (err) {
         console.error("Error loading inventory:", err);
     }
@@ -71,7 +74,7 @@ function renderInventory(items) {
         div.className = "inventory-item";
         div.innerHTML = `
             <div class="swatch" style="${getSwatchStyle(item)}"></div>
-            <h3>${item.color || "Unknown Color"} ${item.inStock ? "" : "(Out of Stock)"}</h3>
+            <h3>${item.color || "Unknown Color"}</h3>
             <p>Finish: ${item.finish || "Unknown Finish"}</p>
             <p>${item.description || ""}</p>
             `;
@@ -106,7 +109,7 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
     renderInventory(filtered);
 });
 
-document.getElementById('refreshBtn').addEvenListener('click', async () => {
+document.getElementById('refreshBtn').addEventListener('click', async () => {
     const btn = document.getElementById('refreshBtn');
     const originalText = btn.innerText;
 
