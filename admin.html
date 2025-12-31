@@ -149,38 +149,30 @@
 </div>
 
 <script>
+    // --- 1. HEX/PICKER SYNC ---
     const setupSync = (pickerId, textId) => {
         const picker = document.getElementById(pickerId);
         const text = document.getElementById(textId);
-
-        picker.addEventListener('input', () => {
-            text.value = picker.value.toUpperCase();
-        });
-    
+        picker.addEventListener('input', () => { text.value = picker.value.toUpperCase(); });
         text.addEventListener('input', () => {
-            if(/^#[0-9A-F]{6}$/i.test(text.value)) {
-                picker.value = text.value;
-            }
+            if(/^#[0-9A-F]{6}$/i.test(text.value)) { picker.value = text.value; }
         });
     };
-
     setupSync('picker1', 'text1');
     setupSync('picker2', 'text2');
     setupSync('picker3', 'text3');
 
+    // --- 2. UPLOAD LOGIC ---
     document.getElementById('addFilamentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
-
         submitBtn.disabled = true;
         submitBtn.innerText = "Uploading...";
 
         const getVal = (id) => {
             const el = document.getElementById(id);
             if (!el) return null;
-
             const val = el.value.trim();
-
             return (/^#[0-9A-F]{6}$/i.test(val)) ? val : null;
         };
 
@@ -202,86 +194,84 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
-
             if (response.ok) {
                 alert("Success! Color added.");
-                e.target.reset(); // Clear the form
-
-                // Reset pickers to default gray/blue colors
+                e.target.reset();
                 document.getElementById('picker1').value = "#3b82f6";
                 document.getElementById('picker2').value = "#cccccc";
                 document.getElementById('picker3').value = "#cccccc";
-
-                document.getElementById('text1').value = "";
-                document.getElementById('text2').value = "";
-                document.getElementById('text3').value = "";
-                
-            } else {
-                const errorData = await response.json();
-                console.error("Supabase Error Details:", errorData);
-                alert("Database Error: " + (errorData.message || errorData.error || "Check console for details"));
+                fetchForAdmin(); // Refresh list automatically
             }
-
         } catch (err) {
-            console.error(err);
-            alert("Connection failed. Is your Render server running?");
+            alert("Upload failed.");
         } finally {
-            // Re-enable the button
             submitBtn.disabled = false;
             submitBtn.innerText = "Upload to Site";
-            }
+        }
     });
 
-    // --- NEW ADMIN READ/SEARCH CODE STARTS HERE ---
-        async function fetchForAdmin() {
-            const btn = document.getElementById('adminRefreshBtn');
-            btn.innerText = "Syncing...";
+    // --- 3. SEARCH & TOGGLE LOGIC ---
+    async function fetchForAdmin() {
+        const btn = document.getElementById('adminRefreshBtn');
+        btn.innerText = "Syncing...";
+        try {
+            const response = await fetch("/inventory");
+            const data = await response.json();
+            window.adminItems = data;
+            renderAdminResults(data);
+        } catch (err) {
+            alert("Sync failed.");
+        } finally {
+            btn.innerText ="🔄 Sync & View Current Colors";
+        }
+    }
 
-            try {
-                const response = await fetch("/inventory");
-                const data = await response.json();
-                window.adminItems = data; // This stores data for searching
-                renderAdminResults(data);
-            } catch (err) {
-                console.error("Failed to sync:", err);
-                alert("Sync failed. Check connection.");
-            } finally {
-                btn.innerText ="🔄 Sync & View Current Colors";
-            }
+    // NEW: Function to talk to the server toggle route
+    async function toggleStock(id, currentState) {
+        try {
+            const response = await fetch(`/inventory/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inStock: currentState })
+            });
+            if (!response.ok) alert("Failed to update status.");
+        } catch (err) {
+            console.error(err);
+            alert("Connection error.");
+        }
+    }
+
+    function renderAdminResults(items) {
+        const container = document.getElementById('adminInventoryResults');
+        if (!items || items.length === 0) {
+            container.innerHTML = "<p style='color: gray;'>No colors found.</p>";
+            return;
         }
 
-        function renderAdminResults(items) {
-            const container = document.getElementById('adminInventoryResults');
-            if (!items || items.length === 0) {
-                container.innerHTML = "<p style='color: gray;'>No colors found.</p>";
-                return;
-            }
-
-            container.innerHTML = items.map(item => `
-                <div style="padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 4px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong>${item.color}</strong>
-                        <span style="font-size: 0.8em; background: #eee; padding: 2px 6px; border-radius: 4px;">${item.finish}</span>
-                    </div>
-                    <div style="font-size: 0.85em; color: #666;">
-                        Hex: ${item.colorHex1} ${item.colorHex2 ? '| ' + item.colorHex2 : ''}
-                    </div>
+        container.innerHTML = items.map(item => `
+            <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: ${item.inStock ? 'white' : '#fff0f0'};">
+                <div>
+                    <strong style="color: ${item.inStock ? '#333' : '#999'};">${item.color}</strong><br>
+                    <small style="color: #666;">${item.finish}</small>
                 </div>
-                `).join('');
-        }
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 12px; font-weight: bold;">${item.inStock ? 'IN STOCK' : 'OUT'}</span>
+                    <input type="checkbox" ${item.inStock ? 'checked' : ''} 
+                        style="width: 25px; height: 25px; cursor: pointer;"
+                        onchange="toggleStock('${item.id}', this.checked)">
+                </div>
+            </div>
+        `).join('');
+    }
 
-        document.getElementById('adminSearchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const items = window.adminItems || [];
-            const filtered = items.filter(i =>
-                i.color.toLowerCase().includes(term) ||
-                i.finish.toLowerCase().includes(term)
-            );
-            renderAdminResults(filtered);
-        });
+    document.getElementById('adminSearchInput').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const items = window.adminItems || [];
+        const filtered = items.filter(i => i.color.toLowerCase().includes(term));
+        renderAdminResults(filtered);
+    });
 
-        document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
-
+    document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
 </script>
 
 </body>

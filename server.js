@@ -77,6 +77,23 @@ app.post("/inventory", async (req, res) => {
     }
 });
 
+app.patch('/inventory/:id', async (req, res) => {
+    const { id } = req.params;
+    const { inStock } = req.body;
+
+    const { data, error } = await supabase
+        .from('colors')
+        .update({ inStock: inStock })
+        .eq('id', id);
+
+    if (error) {
+        console.error("Update error:", error);
+        return res.status(400).json(error);
+    }
+
+    res.json({ message: "Status updated successfully", data });
+});
+
 // Make sure the home page loads index.html
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
