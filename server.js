@@ -18,7 +18,7 @@ app.use(express.json());
 //Tell Express to serve any file in the main folder (like admin.html)
 app.use(express.static(__dirname));
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
@@ -49,15 +49,24 @@ app.get("/inventory", async (req, res) => {
 });
 
 app.post("/inventory", async (req, res) => {
-    const { name, finish, description, inStock, colorHex1 } = req.body;
+    try {
+        const { color, finish, description, inStock, colorHex1, colorHex2, colorHex3 } = req.body;
 
-    const { data, error } = await supabase
-        .from('colors')
-        .insert([{ name, finish, description, inStock, colorHex1 }])
-        .select();
+        const { data, error } = await supabase
+            .from('colors')
+            .insert([{ color, finish, description, inStock, colorHex1, colorHex2, colorHex3 }])
+            .select();
 
-    if (error) return res.status(500).json(error);
-    res.json(data);
+        if (error) {
+            console.error("Supabase error:", error);
+            return res.status(400).json(error);
+        }
+
+        res.json(data);
+    }  catch (err) {
+        console.error("Server crash:", err);
+        res.status(500).json({error: "Internal Server Error" });
+    }
 });
 
 // Make sure the home page loads index.html
