@@ -16,7 +16,7 @@ async function loadInventory() {
         
         const inStockItems = allItems.filter(item => item.inStock === true);
 
-        inStock.sort((a, b) => a.color.localeCompare(b.color));
+        inStockItems.sort((a, b) => a.color.localeCompare(b.color));
         
         window.cachedItems = inStockItems;
 
