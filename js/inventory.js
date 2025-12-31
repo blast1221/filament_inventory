@@ -90,3 +90,32 @@ function showFinish(finishType) {
 }
 
 window.addEventListener("DOMContentLoaded", loadInventory);
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const allItems = window.cachedItems || [];
+
+    const filtered = allItems.filter(item => {
+        return (
+            item.color.toLowerCase().includes(term) ||
+            item.finish.toLowerCase().includes(term) ||
+            (item.description && item.description.toLowerCase().includes(term))
+        );
+    });
+
+    renderInventory(filtered);
+});
+
+document.getElementById('refreshBtn').addEvenListener('click', async () => {
+    const btn = document.getElementById('refreshBtn');
+    const originalText = btn.innerText;
+
+    btn.innerText = "Syncing...";
+    btn.disabled = true;
+
+    await loadInventory();
+
+    btn.innerText = originalText;
+    btn.disabled = false;
+    document.getElementById('searchInput').value = "";
+});
