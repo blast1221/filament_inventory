@@ -46,9 +46,10 @@ function getSwatchStyle(item) {
         return `
             background: linear-gradient(
                 to right,
-                ${c1},
-                ${c2},
-                ${c3}
+                ${c1} 33%,
+                ${c2} 33%,
+                ${c2} 66%,
+                ${c3} 66%
             );
         `;
     }
