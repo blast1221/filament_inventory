@@ -2,12 +2,20 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 import cors from "cors";
+import { fileURLToPath } from "url"; // New
 
 dotenv.config();
+
+// Define paths for finding your files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+//Tell Express to serve any file in the main folder (like admin.html)
+app.use(express.static(__dirname));
 
 const port = 3000;
 
@@ -49,6 +57,11 @@ app.post("/inventory", async (req, res) => {
 
     if (error) return res.status(500).json(error);
     res.json(data);
+});
+
+// Make sure the home page loads index.html
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
 });
 
 app.listen(port, () => {
