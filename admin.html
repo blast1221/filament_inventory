@@ -156,10 +156,13 @@
         submitBtn.innerText = "Uploading...";
 
         const getVal = (id) => {
-            const val = document.getElementById(id).value.trim();
-
-            return (val.startsWith('#') && val.length === 7) ? val : null;
+            const el = document.getElementById(id);
+            if (!el) return null;
+            const val = el.value.trim();
+            return (/^#[0-9A-F]{6}$/i.test(val)) ? val : null;
         };
+
+        const primaryColor = getVal('text1') || document.getElementById('picker1').value;
 
         const payload = {
             color: document.getElementById('name').value,
@@ -172,7 +175,7 @@
         };
 
         try {
-            const response = await fetch("https://filament-inventory.onrender.com/inventory", {
+            const response = await fetch("/inventory", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
