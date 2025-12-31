@@ -54,7 +54,15 @@ app.post("/inventory", async (req, res) => {
 
         const { data, error } = await supabase
             .from('colors')
-            .insert([{ color, finish, description, inStock, colorHex1, colorHex2, colorHex3 }])
+            .insert([{ 
+                "color": color,
+                "finish": finish,
+                "description": description,
+                "inStock": inStock,
+                "colorHex1": colorHex1,
+                "colorHex2": colorHex2, 
+                "colorHex3": colorHex3
+            }])
             .select();
 
         if (error) {
