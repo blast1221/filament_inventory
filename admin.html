@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#28A745">
     <meta name="application-name" content="Filament Admin">
+    <link rel="manifest" href="/manifest.json">
     <title> Filament Admin - Multi-Color Entry</title>
     
     <style>
@@ -172,7 +173,7 @@
             color: document.getElementById('name').value,
             finish: document.getElementById('finish').value,
             description: document.getElementById('description').value,
-            colorHex1: document.getElementById('text1').value || document.getElementById('picker1').value,
+            colorHex1: primaryColor,
             colorHex2: getVal('text2'),
             colorHex3: getVal('text3'),
             inStock: true
