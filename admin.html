@@ -190,7 +190,9 @@
                 document.getElementById('picker2').value = "#cccccc";
                 document.getElementById('picker3').value = "#cccccc";
             } else {
-                alert("Error saving data. Please check the server.");
+                const errorData = await response.json();
+                console.error("Supabase Error Details:", errorData);
+                alert("Database Error: " + (errorData.message || errorData.error || "Check console for details"));
             }
 
         } catch (err) {
