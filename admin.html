@@ -249,19 +249,25 @@
         }
 
         container.innerHTML = items.map(item => `
-            <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: ${item.inStock ? 'white' : '#fff0f0'};">
-                <div>
-                    <strong style="color: ${item.inStock ? '#333' : '#999'};">${item.color}</strong><br>
-                    <small style="color: #666;">${item.finish}</small>
+        <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: ${item.inStock ? 'white' : '#fff0f0'};">
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <strong style="color: ${item.inStock ? '#333' : '#999'};">${item.color}</strong>
+                    <button onclick="editName('${item.id}', '${item.color}')" 
+                            style="width: auto; padding: 2px 8px; font-size: 11px; background: #6c757d; color: white; border-radius: 4px; border: none; cursor: pointer;">
+                        Edit
+                    </button>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 12px; font-weight: bold;">${item.inStock ? 'IN STOCK' : 'OUT'}</span>
-                    <input type="checkbox" ${item.inStock ? 'checked' : ''} 
-                        style="width: 25px; height: 25px; cursor: pointer;"
-                        onchange="toggleStock('${item.id}', this.checked)">
-                </div>
+                <small style="color: #666;">${item.finish}</small>
             </div>
-        `).join('');
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 10px; font-weight: bold;">${item.inStock ? 'IN STOCK' : 'OUT'}</span>
+                <input type="checkbox" ${item.inStock ? 'checked' : ''} 
+                    style="width: 25px; height: 25px; cursor: pointer;"
+                    onchange="toggleStock('${item.id}', this.checked)">
+            </div>
+        </div>
+    `).join('');
     }
 
     document.getElementById('adminSearchInput').addEventListener('input', (e) => {
@@ -272,6 +278,29 @@
     });
 
     document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
+
+    async function editName(id, currentName) {
+        const newName = prompt("Edit Color Name:", currentName);
+
+        if (newName === null || newName.trim() === "") return;
+
+        try {
+            const response = await fetch(`/inventory/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ color: newName.trim() })
+            });
+
+            if (response.ok) {
+                fetchForAdmin;
+            } else {
+                alert("Failed to update name.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Connection error.");
+        }
+    }
 </script>
 
 </body>
