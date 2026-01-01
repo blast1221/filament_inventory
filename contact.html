@@ -6,11 +6,14 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="Crafted 3D.ico" type="image/x-icon">
 </head>
-<header>
-    <h1>Contact Me</h1>
-    <p>Feel free to reach out with any questions or comments!</p>
-</header>
+
 <body>
+
+    <header>
+        <h1>Contact Me</h1>
+        <p>Feel free to reach out with any questions or comments!</p>
+    </header>
+    
     <nav>
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
@@ -23,7 +26,12 @@
 
     <main>
         
-        <form id="contact-form">
+        <form id="contact-form" action="https://api.web3forms.com/submit" method="POST">
+            
+            <input type="hidden" name="access_key" value="fe5640b1-dc7d-4310-afde-a4414793e2ae">
+            <input type="hidden" name="redirect" value="https://blast1221.github.io/filament_inventory/index.html">
+            <input type="hidden" name="from_name" value="Crafted 3D Inquiry">
+            
             <label for="name">Name</label>
             <input type="text" id="name" name="name" required>
 
