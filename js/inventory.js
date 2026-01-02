@@ -85,10 +85,17 @@ function renderInventory(items) {
 
 function showFinish(finishType) {
     const allItems = window.cachedItems || [];
-    const filtered = 
-        finishType === "All"
-            ? allItems
-            : allItems.filter(item => item.finish === finishType);
+    let filtered;
+
+        if (finishType === "All") {
+            filtered = allItems;
+        } else if (finishType === "Solid") {
+            filtered = allItems.filter(item =>
+                item.finish === "Solid" || item.finish === "Basic" || item.finish === ""
+            );
+        } else {
+            filtered = allItems.filter(item => item.finish === finishType);
+        }
     renderInventory(filtered);
 }
 

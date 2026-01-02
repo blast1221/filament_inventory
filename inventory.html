@@ -25,12 +25,20 @@
 
     <main>
         <h2>Filament Inventory</h2>
+
+        <div class="inventory-controls">
+            <input type="text" id="searchInput" placeholder="Search colors, finishes...">
+            <button id="refreshBtn">Sync Inventory</button>
+        </div>
         <div id="filter-buttons">
             <button onclick="showFinish('All')">All</button>
+            <button onclick="showFinish('Solid')">Solid</button>
             <button onclick="showFinish('Matte')">Matte</button>
             <button onclick="showFinish('Gradient')">Gradient</button>
             <button onclick="showFinish('Silk')">Silk</button>
             <button onclick="showFinish('Satin')">Satin</button>
+            <button onclick="showFinish('Translucent')">Translucent</button>
+            <button onclick="showFinish('Specialty')">Specialty</button>
             <!-- add more finish types here as needed -->
         </div>
 
