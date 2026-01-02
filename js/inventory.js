@@ -99,8 +99,6 @@ function showFinish(finishType) {
     renderInventory(filtered);
 }
 
-window.addEventListener("DOMContentLoaded", loadInventory);
-
 document.getElementById('searchInput').addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
     const allItems = window.cachedItems || [];
@@ -118,6 +116,7 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
 
 document.getElementById('refreshBtn').addEventListener('click', async () => {
     const btn = document.getElementById('refreshBtn');
+    const syncText = document.getElementById('sync-time');
     const originalText = btn.innerText;
 
     btn.innerText = "Syncing...";
@@ -125,7 +124,27 @@ document.getElementById('refreshBtn').addEventListener('click', async () => {
 
     await loadInventory();
 
+    const now = new Date();
+    syncText.innerText = `Last synced: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
     btn.innerText = originalText;
     btn.disabled = false;
     document.getElementById('searchInput').value = "";
+});
+
+function displayLastUpdated() {
+    const lastMod = new Date(document.lastModified);
+
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const formattedDate = lastMod.toLocaleDateString('en-US', options);
+
+    const dateElement = document.getElementById('last-updated');
+    if (dateElement) {
+        dateElement.innerText = formattedDate;
+    }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    loadInventory();
+    displayLastUpdated();
 });

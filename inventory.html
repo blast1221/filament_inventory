@@ -29,6 +29,7 @@
         <div class="inventory-controls">
             <input type="text" id="searchInput" placeholder="Search colors, finishes...">
             <button id="refreshBtn">Sync Inventory</button>
+            <small id="sync-time" style="color: #888; margin-left: 10px;"></small>
         </div>
         <div id="filter-buttons">
             <button onclick="showFinish('All')">All</button>
@@ -44,6 +45,10 @@
 
         <div id="inventory"></div>
     </main>
+
+    <footer>
+        <p>@ 2026 C3DW | <span id="version-display">v1.0.2</span> | Last Updated: <span id="Last-updated">Loading...</span></p>
+    </footer>
 
     <script src="js/inventory.js?v=1.0.2"></script>
 </body>

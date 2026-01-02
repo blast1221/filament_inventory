@@ -48,6 +48,11 @@ body {
   margin-top: 20px;
 }
 
+#version-display {
+  font-weight: bold;
+  color: #333;
+}
+
 body {
   background: linear-gradient(to bottom, #fff1eb, #ace0f9);
   min-height: 100vh;
@@ -116,6 +121,15 @@ body {
 .filament img {
   width: 100%;
   height: auto;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  border-top: 1 =px solid #ddd;
+  font-size: 0.8rem;
+  color: #666;
 }
 
 .gallery-item p {
