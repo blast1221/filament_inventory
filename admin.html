@@ -50,12 +50,9 @@
 
         <div class="form-group">
             <label for="finish">Finish</label>
-            <select id="finish">
-                <option value="Matte">Matte</option>
-                <option value="Silk">Silk</option>
-                <option value="Satin">Satin</option>
-                <option value="Glossy">Glossy</option>
-            </select>
+            <select id="finish" onchange="toggleNewFinishInput(this.value)">
+                </select>
+            <input type="text" id="newFinishInput" placeholder="Type new finish name..." style="display:none; margin-top:10px;">
         </div>
 
         <div class="form-group">
@@ -124,6 +121,34 @@
     setupSync('picker2', 'text2');
     setupSync('picker3', 'text3');
 
+    // --- AUTOMATED FINISH LOGIC --- //
+    async function populateFinishDropdown() {
+        try {
+            const response = await fetch("/inventory");
+            const data = await response.json();
+
+            const uniqueFinishes = [...new Set(data.map(item => item.finish))]
+                .filter(f => f && f !== "")
+                .sort();
+
+            const mainSelect = document.getElementById('finish');
+            if (mainSelect) {
+                mainSelect.innerHTML = uniqueFinishes.map(f =>
+                    `<option value="${f}">${f}</option>`
+                ).join('') + '<option value="ADD_NEW">+ Add New Finish...</option>';
+            }
+            window.availableFinishes = uniqueFinishes;
+        } catch (err) {
+            console.error("Failed to sync finish list:", err);
+        }
+    }
+
+    function toggleNewFinishInput(value) {
+        const input = document.getElementById('newFinishInput');
+        input.style.display = (value === "ADD_NEW") ? "block" : "none";
+        if (value === "ADD_NEW") input.focus();
+    }
+
     // --- 2. UPLOAD LOGIC ---
     document.getElementById('addFilamentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -133,7 +158,9 @@
 
         const payload = {
             color: document.getElementById('name').value,
-            finish: document.getElementById('finish').value,
+            finish: (document.getElementById('finish').value === "ADD_NEW")
+                        ? document.getElementById('newFinishInput').value.trim()
+                        : document.getElementById('finish').value,
             description: document.getElementById('description').value,
             colorHex1: document.getElementById('text1').value || document.getElementById('picker1').value,
             colorHex2: document.getElementById('text2').value || null,
@@ -165,8 +192,12 @@
             const data = await response.json();
             window.adminItems = data;
             renderAdminResults(data);
-        } catch (err) { alert("Sync failed."); }
-        finally { btn.innerText ="🔄 Sync & View Current Colors"; }
+            updateFooterDate(data);
+        } catch (err) { 
+            alert("Sync failed."); 
+        } finally { 
+            btn.innerText ="🔄 Sync & View Current Colors"; 
+        }
     }
 
     async function toggleStock(id, currentState) {
@@ -204,10 +235,15 @@
                     </button>
                 </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
                 <input type="checkbox" ${item.inStock ? 'checked' : ''} 
                     style="width: 25px; height: 25px; cursor: pointer;"
                     onchange="toggleStock('${item.id}', this.checked)">
+            
+                <button onclick="deleteItem('${item.id}', '${item.color}')" 
+                        style="width: auto; background: none; border: none; color: #dc3545; cursor: pointer; font-size: 20px; padding: 5px;">
+                    🗑️
+                </button>
             </div>
         </div>
         `).join('');
@@ -228,7 +264,9 @@
         if (fieldName === 'finish') {
             const select = document.createElement('select');
             select.id = 'modalInput';
-            ["Matte", "Silk", "Satin", "Glossy"].forEach(opt => {
+            const finishes = window.availableFinishes || ["Solid", "Matte", "Silk"]
+
+            finishes.forEach(opt => {
                 const el = document.createElement('option');
                 el.value = opt;
                 el.text = opt;
@@ -241,6 +279,7 @@
             input.type = 'text';
             input.id = 'modalInput';
             input.value = currentVal;
+            input.style.width = "100%";
             modalBody.appendChild(input);
         }
 
@@ -275,6 +314,42 @@
     });
 
     document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
+
+    window.addEventListener("DOMContentLoaded", async () => {
+        await populateFinishDropdown();
+        fetchForAdmin();
+    });
+
+    function updateFooterDate(items) {
+        const dateSpan = document.getElementById('last-updated');
+        if (!items || items.length === 0) {
+            dateSpan.innerText = "No data";
+            return;
+        }
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        dateSpan.innerText = now.toLocaleDateString(undefined, options);
+    }
+
+    async function deleteItem(id, name) {
+        if (!confirm(`Are you sure you want to permanently delete "${name}"?`)) return;
+
+        try {
+            const response = await fetch(`/inventory/${id}`, {
+                method: "DELETE"
+            });
+            if (response.ok) {
+                fetchForAdmin();
+            } else {
+                alert("Delete failed.");
+            }
+        } catch (err) {
+            alert("Error connecting to server.");
+        }
+    }
 </script>
+<footer style="text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #eee; color: #666; font-size: 0.9em;">
+    <p>@ 2026 C3DW | <span id="version-display">v1.2.0</span> | Last Updated: <span id="last-updated">Loading...</span></p>
+</footer>
 </body>
 </html>
