@@ -156,6 +156,16 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "Uploading...";
 
+        // --- 2.1 GET THE RAW FINISH VALUE --- //
+        const rawFinish = (document.getElementById('finish').value === "ADD_NEW")
+                            ? document.getElementById('newFinishINput').value.trim()
+                            : document.getElementById('finish').value;
+
+        // --- 2.2 CLEAN THE FINISH (Uppercase first letter, lowercase the rest)
+        // ---      This prevents "basic" vs "Basic" duplicates --- //
+        const cleanFinish = rawFinish.charAt(0).toUpperCase() + rawFinish.slice(1).toLowerCase();
+
+        // --- 2.3 CREATE THE PAYLOAD USING cleanFinish
         const payload = {
             color: document.getElementById('name').value,
             finish: (document.getElementById('finish').value === "ADD_NEW")
@@ -177,7 +187,9 @@
             if (response.ok) {
                 alert("Success! Color added.");
                 e.target.reset();
+                document.getElementById('newFinishInput').style.display = 'none';
                 fetchForAdmin(); 
+                populateFinishDropdon();
             }
         } catch (err) { alert("Upload failed."); }
         finally { submitBtn.disabled = false; submitBtn.innerText = "Upload to Site"; }
