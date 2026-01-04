@@ -15,9 +15,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//Tell Express to serve any file in the main folder (like admin.html)
-app.use(express.static(__dirname));
-
 const port = process.env.PORT || 3000;
 
 const supabase = createClient(
@@ -65,15 +62,10 @@ app.post("/inventory", async (req, res) => {
             }])
             .select();
 
-        if (error) {
-            console.error("Supabase error:", error);
-            return res.status(400).json(error);
-        }
-
+        if (error) return res.status(400).json(error);
         res.json(data);
-    }  catch (err) {
-        console.error("Server crash:", err);
-        res.status(500).json({error: "Internal Server Error" });
+    } catch (err) {
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
@@ -93,6 +85,20 @@ app.patch('/inventory/:id', async (req, res) => {
 
     res.json({ message: "Update successful", data });
 });
+
+app.delete('/inventory/:id', async (req, res) => {
+    const { id } = req.params;
+    const { error } = await supabase
+        .from('colors')
+        .delete()
+        .eq('id', id);
+
+    if (error) return res.status(400).json(error);
+    res.json({ message: "Deleted successfully" });
+});
+
+//Tell Express to serve any file in the main folder (like admin.html)
+app.use(express.static(__dirname));
 
 // Make sure the home page loads index.html
 app.get("/", (req, res) => {
