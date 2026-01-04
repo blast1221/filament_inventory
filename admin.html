@@ -124,7 +124,7 @@
     // --- AUTOMATED FINISH LOGIC --- //
     async function populateFinishDropdown() {
         try {
-            const response = await fetch("/inventory");
+            const response = await fetch("/inventory/?cb=" + Date.now());
             if (!response.ok) throw new Error("Fetch failed");
             const data = await response.json();
 
@@ -185,7 +185,7 @@
         };        
 
         try {
-            const response = await fetch("/inventory", {
+            const response = await fetch("/inventory/?cb=" + Date.now(), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -208,7 +208,7 @@
         const btn = document.getElementById('adminRefreshBtn');
         if (btn) btn.innerText = "Syncing...";
         try {
-            const response = await fetch("/inventory");
+            const response = await fetch("/inventory/?cb=" + Date.now());
             if (!response.ok) throw new Error("Sync failed");
             const data = await response.json();
             window.adminItems = data;
