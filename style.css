@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
 body {
   font-family: Arial, sans-serif;
   text-align: center;
@@ -81,11 +83,19 @@ body {
 }
 
 .contact-intro {
-  background-color: #ffffff;
+  font-family: 'Inter', sas-serif;
+  max-width: 800px;
+  margin: 40px auto;
   padding: 20px;
-  border-left: 5px solid #28A745;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);  
+  line-height: 1.8;
+  text-align: center;
+  color: #444; 
+}
+
+.contact-intro h2 {
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 15px;
 }
 
 .cta-button {

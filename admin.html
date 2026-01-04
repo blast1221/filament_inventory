@@ -207,7 +207,6 @@
             const data = await response.json();
             window.adminItems = data;
             renderAdminResults(data);
-            updateFooterDate();
         } catch (err) { 
             console.error("The error is:", err);
             alert("Sync failed: " + err.message); 
@@ -328,13 +327,6 @@
         await fetchForAdmin();
     });
 
-    function updateFooterDate() {
-        const dateSpan = document.getElementById('last-updated');
-        if (dateSpan) {
-            dateSpan.innerText = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-        }
-    }
-
     async function deleteItem(id, name) {
         if (!confirm(`Are you sure you want to permanently delete "${name}"?`)) return;
         try {
@@ -344,8 +336,7 @@
     }
 </script>
 
-<footer style="text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #eee; color: #666; font-size: 0.9em;">
-    <p>@ 2026 C3DW | <span id="version-display">v1.2.4</span> | Last Updated: <span id="last-updated">Loading...</span></p>
-</footer>
+<script src="js/footer.js"></script>
+
 </body>
 </html>
