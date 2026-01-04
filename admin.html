@@ -224,7 +224,7 @@
 
     async function toggleStock(id, currentState) {
         try {
-            await fetch(`/inventory/${id}`, {
+            await fetch(`https://filament-inventory.onrender.com/inventory/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ inStock: currentState })
@@ -348,7 +348,7 @@
     async function deleteItem(id, name) {
         if (!confirm(`Are you sure you want to permanently delete "${name}"?`)) return;
         try {
-            const response = await fetch(`/inventory/${id}`, { method: "DELETE" });
+            const response = await fetch(`https://filament-inventory.onrender.com/inventory/${id}`, { method: "DELETE" });
             if (response.ok) fetchForAdmin();
         } catch (err) { alert("Delete failed."); }
     }
