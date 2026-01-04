@@ -80,6 +80,14 @@ body {
   min-height: 100vh;
 }
 
+.contact-intro {
+  background-color: #ffffff;
+  padding: 20px;
+  border-left: 5px solid #28A745;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);  
+}
+
 .cta-button {
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
