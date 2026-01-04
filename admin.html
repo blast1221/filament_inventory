@@ -125,28 +125,39 @@
     async function populateFinishDropdown() {
         try {
             const response = await fetch("/inventory");
+            if (!response.ok) throw new Error("Fetch failed");
             const data = await response.json();
 
-            const uniqueFinishes = [...new Set(data.map(item => item.finish))]
-                .filter(f => f && f !== "")
-                .sort();
+            const standardFinishes = ["Matte", "Silk", "Satin", "Solid", "Galaxy", "Translucent"];
+
+            const existingFinishes = Array.isArray(data)
+                ? data.map(item => item.finish).filter(f => f && f.trim() !== "")
+                : [];
+
+            const combined = [...new Set([...standardFinishes, ...existingFinishes])].sort();
 
             const mainSelect = document.getElementById('finish');
             if (mainSelect) {
-                mainSelect.innerHTML = uniqueFinishes.map(f =>
+                mainSelect.innerHTML = combined.map(f =>
                     `<option value="${f}">${f}</option>`
                 ).join('') + '<option value="ADD_NEW">+ Add New Finish...</option>';
             }
-            window.availableFinishes = uniqueFinishes;
+            window.availableFinishes = combined;
         } catch (err) {
-            console.error("Failed to sync finish list:", err);
+            console.error("Finish sync failed:", err);
+            const fallback = ["Matte", "Silk", "Satin", "Solid"];
+            document.getElementById('finish').innerHTML = fallback.map(f =>
+                `<option value="${f}">${f}</option>`
+            ).join('') + '<option value="ADD_NEW">+ Add New Finish...</option>';
         }
     }
 
     function toggleNewFinishInput(value) {
         const input = document.getElementById('newFinishInput');
-        input.style.display = (value === "ADD_NEW") ? "block" : "none";
-        if (value === "ADD_NEW") input.focus();
+        if (input) {
+            input.style.display = (value === "ADD_NEW") ? "block" : "none";
+            if (value === "ADD_NEW") input.focus();
+        }
     }
 
     // --- 2. UPLOAD LOGIC ---
@@ -156,21 +167,16 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "Uploading...";
 
-        // --- 2.1 GET THE RAW FINISH VALUE --- //
-        const rawFinish = (document.getElementById('finish').value === "ADD_NEW")
-                            ? document.getElementById('newFinishInput').value.trim()
-                            : document.getElementById('finish').value;
+        const finishSelect = document.getElementById('finish');
+        const newFinishInput = document.getElementById('newFinishInput');
 
-        // --- 2.2 CLEAN THE FINISH (Uppercase first letter, lowercase the rest)
-        // ---      This prevents "basic" vs "Basic" duplicates --- //
+        // Logic to grab the right finish and clean it
+        let rawFinish = (finishSelect.value === "ADD_NEW") ? newFinishInput.value.trim() : finishSelect.value;
         const cleanFinish = rawFinish.charAt(0).toUpperCase() + rawFinish.slice(1).toLowerCase();
 
-        // --- 2.3 CREATE THE PAYLOAD USING cleanFinish
         const payload = {
-            color: document.getElementById('name').value,
-            finish: (document.getElementById('finish').value === "ADD_NEW")
-                        ? document.getElementById('newFinishInput').value.trim()
-                        : document.getElementById('finish').value,
+            color: document.getElementById('name').value.trim(),
+            finish: cleanFinish,
             description: document.getElementById('description').value,
             colorHex1: document.getElementById('text1').value || document.getElementById('picker1').value,
             colorHex2: document.getElementById('text2').value || null,
@@ -187,28 +193,32 @@
             if (response.ok) {
                 alert("Success! Color added.");
                 e.target.reset();
-                document.getElementById('newFinishInput').style.display = 'none';
-                fetchForAdmin(); 
-                populateFinishDropdown();
+                newFinishInput.style.display = 'none';
+                await fetchForAdmin(); 
+                await populateFinishDropdown();
+            } else {
+                alert("Upload failed server-side.");
             }
-        } catch (err) { alert("Upload failed."); }
+        } catch (err) { alert("Network error during upload."); }
         finally { submitBtn.disabled = false; submitBtn.innerText = "Upload to Site"; }
     });
 
     // --- 3. SYNC & TOGGLE ---
     async function fetchForAdmin() {
         const btn = document.getElementById('adminRefreshBtn');
-        btn.innerText = "Syncing...";
+        if (btn) btn.innerText = "Syncing...";
         try {
             const response = await fetch("/inventory");
+            if (!response.ok) throw new Error("Sync failed");
             const data = await response.json();
             window.adminItems = data;
             renderAdminResults(data);
             updateFooterDate(data);
         } catch (err) { 
-            alert("Sync failed."); 
+            console.error("The error is:", err);
+            alert("Sync failed: " + err.message); 
         } finally { 
-            btn.innerText ="🔄 Sync & View Current Colors"; 
+            if (btn) btn.innerText ="🔄 Sync & View Current Colors"; 
         }
     }
 
@@ -219,7 +229,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ inStock: currentState })
             });
-        } catch (err) { alert("Connection error."); }
+        } catch (err) { alert("Stock update failed."); }
     }
 
     function renderAdminResults(items) {
@@ -251,7 +261,6 @@
                 <input type="checkbox" ${item.inStock ? 'checked' : ''} 
                     style="width: 25px; height: 25px; cursor: pointer;"
                     onchange="toggleStock('${item.id}', this.checked)">
-            
                 <button onclick="deleteItem('${item.id}', '${item.color}')" 
                         style="width: auto; background: none; border: none; color: #dc3545; cursor: pointer; font-size: 20px; padding: 5px;">
                     🗑️
@@ -276,8 +285,7 @@
         if (fieldName === 'finish') {
             const select = document.createElement('select');
             select.id = 'modalInput';
-            const finishes = window.availableFinishes || ["Solid", "Matte", "Silk"]
-
+            const finishes = window.availableFinishes || ["Matte", "Silk", "Satin", "Solid"];
             finishes.forEach(opt => {
                 const el = document.createElement('option');
                 el.value = opt;
@@ -296,14 +304,10 @@
         }
 
         modal.style.display = 'flex';
-
         saveBtn.onclick = async () => {
             const newVal = document.getElementById('modalInput').value;
             if (!newVal || newVal.trim() === "") return;
-            
             saveBtn.disabled = true;
-            saveBtn.innerText = "Saving...";
-
             try {
                 const response = await fetch(`/inventory/${id}`, {
                     method: "PATCH",
@@ -314,11 +318,12 @@
                     closeModal();
                     fetchForAdmin();
                 }
-            } catch (err) { alert("Error saving."); }
-            finally { saveBtn.disabled = false; saveBtn.innerText = "Save Changes"; }
+            } catch (err) { alert("Save failed."); }
+            finally { saveBtn.disabled = false; }
         };
     }
 
+    // --- 5. INITIALIZATION --- //
     document.getElementById('adminSearchInput').addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         const filtered = (window.adminItems || []).filter(i => i.color.toLowerCase().includes(term));
@@ -335,10 +340,6 @@
     function updateFooterDate(items) {
         const dateSpan = document.getElementById('last-updated');
         if (!dateSpan) return;
-        if (!items || items.length === 0) {
-            dateSpan.innerText = "No data";
-            return;
-        }
         const now = new Date();
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         dateSpan.innerText = now.toLocaleDateString(undefined, options);
@@ -346,19 +347,10 @@
 
     async function deleteItem(id, name) {
         if (!confirm(`Are you sure you want to permanently delete "${name}"?`)) return;
-
         try {
-            const response = await fetch(`/inventory/${id}`, {
-                method: "DELETE"
-            });
-            if (response.ok) {
-                fetchForAdmin();
-            } else {
-                alert("Delete failed.");
-            }
-        } catch (err) {
-            alert("Error connecting to server.");
-        }
+            const response = await fetch(`/inventory/${id}`, { method: "DELETE" });
+            if (response.ok) fetchForAdmin();
+        } catch (err) { alert("Delete failed."); }
     }
 </script>
 <footer style="text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #eee; color: #666; font-size: 0.9em;">
