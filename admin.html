@@ -42,7 +42,8 @@
     <form id="addFilamentForm">
         <div class="form-group">
             <label for="name">Color Name</label>
-            <input type="text" id="name" placeholder="e.g., Galaxy Black" required>
+            <input type="text" id="name" list="existing-colors" placeholder="e.g., Galaxy Black" autocomplete="off" required>
+            <datalist id="existing-colors"></datalist>
         </div>
 
         <div class="form-group">
@@ -159,6 +160,17 @@
     // --- 2. UPLOAD LOGIC ---
     document.getElementById('addFilamentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        const newName = document.getElementById('name').value.trim();
+        const isDuplicate = (window.adminItems || []).some(item =>
+            item.color.toLowerCase() === newName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            alert(`❌ Error: "${newName}" is already in your inventory. Please edit the existing entry below instead of adding a duplicate.`);
+            return;
+        }
+
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerText = "Uploading...";
@@ -196,6 +208,33 @@
         } catch (err) { alert("Network error."); }
         finally { submitBtn.disabled = false; submitBtn.innerText = "Upload to Site"; }
     });
+
+    function updateColorDataList() {
+        const datalist = document.getElementById('existing-colors');
+        const nameInput = document.getElementById('name');
+        if (!datalist || !window.adminItems)
+        return;
+
+        nameInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            if (query.length < 2) {
+                datalist.innerHTML = '';
+                return;
+            }
+        
+
+            const matches = window.adminItems.filter(item =>
+                item.color.toLowerCase().includes(query)
+            );
+
+            datalist.innerHTML = matches
+                .map(item => `<option value="${item.color}">`)
+                .join('');
+
+            const exists = window.adminItems.some(item => item.color.toLowerCase() === query);
+            e.target.style.border = exists ? "2px solid #DC3545" : "1px solid #ccc";
+        });
+    }
 
     // --- 3. SYNC & VIEW ---
     async function fetchForAdmin() {
@@ -318,6 +357,12 @@
         const term = e.target.value.toLowerCase();
         const filtered = (window.adminItems || []).filter(i => i.color.toLowerCase().includes(term));
         renderAdminResults(filtered);
+    });
+
+    document.getElementById('name').addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        const exists = (window.adminItems || []).some(item => item.color.toLowerCase() === val);
+        e.target.style.border = exists ? "2px solid #DC3545" : "1px solid #ccc";
     });
 
     document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
