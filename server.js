@@ -15,7 +15,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'x-api-key']
+}));
 app.use(express.json());
 app.use(express.static(__dirname));
 
@@ -62,7 +66,7 @@ app.get("/inventory", async (req, res) => {
     res.json(formatted);
 });
 
-app.post("/inventory", async (req, res) => {
+app.post("/inventory", adminAuth, async (req, res) => {
     try {
         const { color, finish, description, inStock, colorHex1, colorHex2, colorHex3 } = req.body;
 
@@ -86,7 +90,7 @@ app.post("/inventory", async (req, res) => {
     }
 });
 
-app.patch('/inventory/:id', async (req, res) => {
+app.patch('/inventory/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
@@ -103,7 +107,7 @@ app.patch('/inventory/:id', async (req, res) => {
     res.json({ message: "Update successful", data });
 });
 
-app.delete('/inventory/:id', async (req, res) => {
+app.delete('/inventory/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
     const { error } = await supabase
         .from('colors')
