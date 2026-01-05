@@ -19,6 +19,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
+const adminAuth = (req, res, next) => {
+    const apiKey = req.headers['x-api-key'];
+    const secretKey = process.env.ADMIN_SECRET_KEY;
+
+    if (apiKey && apiKey === secretKey) {
+        next();
+    } else {
+        res.status(403).json({ error: "Unauthorized: Incorrect or missing Secret Key"});
+    }
+};
+
 const port = process.env.PORT || 10000;
 
 const supabase = createClient(
