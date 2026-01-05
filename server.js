@@ -3,7 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
-import { fileURLToPath } from "url"; // New
+import { fileURLToPath } from "url";
+import helmet from 'helmet';
 
 dotenv.config();
 
@@ -11,12 +12,12 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const helmet = require('helmet');
-app.use(helmet());
-
 const app = express();
+
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
 
 const port = process.env.PORT || 10000;
 
@@ -24,6 +25,8 @@ const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_ANON_KEY
 );
+
+// -- ROUTES -- //
 
 app.get("/inventory", async (req, res) => {
     const { data, error } = await supabase
@@ -100,14 +103,11 @@ app.delete('/inventory/:id', async (req, res) => {
     res.json({ message: "Deleted successfully" });
 });
 
-//Tell Express to serve any file in the main folder (like admin.html)
-app.use(express.static(__dirname));
-
 // Make sure the home page loads index.html
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
 });
