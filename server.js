@@ -94,6 +94,8 @@ app.patch('/inventory/:id', adminAuth, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
+    console.log(`Applying updates to ID ${id}:`, updates);
+
     const { data, error } = await supabase
         .from('colors')
         .update(updates)
@@ -104,6 +106,7 @@ app.patch('/inventory/:id', adminAuth, async (req, res) => {
         return res.status(400).json(error);
     }
 
+    console.log("Database result:", data);
     res.json({ message: "Update successful", data });
 });
 
