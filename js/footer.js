@@ -1,5 +1,5 @@
 function loadGlobalFooter() {
-    const version = "v1.4.9";
+    const version = "v1.4.10";
     const now = new Date();
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     const dateString = now.toLocaleDateString(undefined, options);

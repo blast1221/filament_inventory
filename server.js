@@ -91,7 +91,7 @@ app.post("/inventory", adminAuth, async (req, res) => {
 });
 
 app.patch('/inventory/:id', adminAuth, async (req, res) => {
-    const { id } = parseInt(req.params.id);
+    const id = parseInt(req.params.id);
     const updates = req.body;
 
     console.log(`Applying updates to ID ${id}:`, updates);
@@ -108,14 +108,14 @@ app.patch('/inventory/:id', adminAuth, async (req, res) => {
     }
     
     if (!data || data.length === 0) {
-        return res.status(404).json({ error: "No record found wit that ID."});
+        return res.status(404).json({ error: "No record found with that ID."});
     }
     console.log("Database result:", data);
     res.json({ message: "Update successful", data });
 });
 
 app.delete('/inventory/:id', adminAuth, async (req, res) => {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
     const { error } = await supabase
         .from('colors')
         .delete()
