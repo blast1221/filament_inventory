@@ -91,7 +91,7 @@ app.post("/inventory", adminAuth, async (req, res) => {
 });
 
 app.patch('/inventory/:id', adminAuth, async (req, res) => {
-    const { id } = req.params;
+    const { id } = parseInt(req.params.id);
     const updates = req.body;
 
     console.log(`Applying updates to ID ${id}:`, updates);
@@ -100,12 +100,16 @@ app.patch('/inventory/:id', adminAuth, async (req, res) => {
         .from('colors')
         .update(updates)
         .eq('id', id);
+        .select();
 
     if (error) {
         console.error("Update error:", error);
         return res.status(400).json(error);
     }
-
+    
+    if (!data || data.length === 0) {
+        return res.status(404).json({ error: "No record found wit that ID."});
+    }
     console.log("Database result:", data);
     res.json({ message: "Update successful", data });
 });
