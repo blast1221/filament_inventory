@@ -111,6 +111,7 @@
     const setupSync = (pickerId, textId) => {
         const picker = document.getElementById(pickerId);
         const text = document.getElementById(textId);
+        if (!picker || !text) return;
         picker.addEventListener('input', () => { text.value = picker.value.toUpperCase(); });
         text.addEventListener('input', () => {
             if(/^#[0-9A-F]{6}$/i.test(text.value)) { picker.value = text.value; }
@@ -120,7 +121,7 @@
     setupSync('picker2', 'text2');
     setupSync('picker3', 'text3');
 
-    // --- AUTOMATED FINISH LOGIC --- //
+    // --- 2. FINISH DROPDOWN LOGIC ---
     async function populateFinishDropdown() {
         try {
             const response = await fetch(`${API_BASE}?cb=${Date.now()}`);
@@ -153,21 +154,27 @@
         const input = document.getElementById('newFinishInput');
         if (input) {
             input.style.display = (value === "ADD_NEW") ? "block" : "none";
-            if (value === "ADD_NEW") input.focus();
+            if (value === "ADD_NEW") {
+                input.focus();
+                input.required = true;
+            } else {
+                input.required = false;
+            }
         }
     }
 
-    // --- 2. UPLOAD LOGIC ---
+    // --- 3. UPLOAD LOGIC ---
     document.getElementById('addFilamentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const newName = document.getElementById('name').value.trim();
+        const nameInput = document.getElementById('name');
+        const newName = nameInput.value.trim();
         const isDuplicate = (window.adminItems || []).some(item =>
             item.color.toLowerCase() === newName.toLowerCase()
         );
 
         if (isDuplicate) {
-            alert(`❌ Error: "${newName}" is already in your inventory. Please edit the existing entry below instead of adding a duplicate.`);
+            alert(`❌ Error: "${newName}" is already in your inventory.`);
             return;
         }
 
@@ -178,10 +185,19 @@
         const finishSelect = document.getElementById('finish');
         const newFinishInput = document.getElementById('newFinishInput');
         let rawFinish = (finishSelect.value === "ADD_NEW") ? newFinishInput.value.trim() : finishSelect.value;
+        
+        // Safety check for blank "Add New"
+        if (!rawFinish) {
+            alert("Please provide a finish name.");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Upload to Site";
+            return;
+        }
+
         const cleanFinish = rawFinish.charAt(0).toUpperCase() + rawFinish.slice(1).toLowerCase();
 
         const payload = {
-            color: document.getElementById('name').value.trim(),
+            color: newName,
             finish: cleanFinish,
             description: document.getElementById('description').value,
             colorHex1: document.getElementById('text1').value || document.getElementById('picker1').value,
@@ -191,7 +207,7 @@
         };        
 
         try {
-            const response = await fetch(`${API_BASE}?cb=${Date.now()}`, {
+            const response = await fetch(API_BASE, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -200,6 +216,9 @@
                 alert("Success! Color added.");
                 e.target.reset();
                 newFinishInput.style.display = 'none';
+                newFinishInput.value = '';
+                nameInput.style.border = "1px solid #ccc"; 
+                
                 await fetchForAdmin(); 
                 await populateFinishDropdown();
             } else {
@@ -209,34 +228,7 @@
         finally { submitBtn.disabled = false; submitBtn.innerText = "Upload to Site"; }
     });
 
-    function updateColorDataList() {
-        const datalist = document.getElementById('existing-colors');
-        const nameInput = document.getElementById('name');
-        if (!datalist || !window.adminItems)
-        return;
-
-        nameInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim().toLowerCase();
-            if (query.length < 2) {
-                datalist.innerHTML = '';
-                return;
-            }
-        
-
-            const matches = window.adminItems.filter(item =>
-                item.color.toLowerCase().includes(query)
-            );
-
-            datalist.innerHTML = matches
-                .map(item => `<option value="${item.color}">`)
-                .join('');
-
-            const exists = window.adminItems.some(item => item.color.toLowerCase() === query);
-            e.target.style.border = exists ? "2px solid #DC3545" : "1px solid #ccc";
-        });
-    }
-
-    // --- 3. SYNC & VIEW ---
+    // --- 4. DATA SYNC & RENDER ---
     async function fetchForAdmin() {
         const btn = document.getElementById('adminRefreshBtn');
         if (btn) btn.innerText = "Syncing...";
@@ -245,23 +237,21 @@
             if (!response.ok) throw new Error("Sync failed");
             const data = await response.json();
             window.adminItems = data;
-            renderAdminResults(data);
+            
+            // Run current filter to keep view consistent
+            const currentSearch = document.getElementById('adminSearchInput').value.toLowerCase();
+            const filtered = data.filter(i => i.color.toLowerCase().includes(currentSearch));
+            renderAdminResults(filtered);
+
+            const nameInput = document.getElementById('name');
+            if (nameInput) renderDataList(nameInput.value);
+
         } catch (err) { 
             console.error("The error is:", err);
             alert("Sync failed: " + err.message); 
         } finally { 
             if (btn) btn.innerText ="🔄 Sync & View Current Colors"; 
         }
-    }
-
-    async function toggleStock(id, currentState) {
-        try {
-            await fetch(`${API_BASE}/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ inStock: currentState })
-            });
-        } catch (err) { alert("Stock update failed."); }
     }
 
     function renderAdminResults(items) {
@@ -302,7 +292,17 @@
         `).join('');
     }
 
-    // --- 4. MODAL LOGIC ---
+    async function toggleStock(id, currentState) {
+        try {
+            await fetch(`${API_BASE}/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inStock: currentState })
+            });
+        } catch (err) { alert("Stock update failed."); }
+    }
+
+    // --- 5. EDIT MODAL ---
     function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
     function openEditModal(id, fieldName, currentVal) {
@@ -345,32 +345,29 @@
                 });
                 if (response.ok) {
                     closeModal();
-                    fetchForAdmin();
+                    await fetchForAdmin();
                 }
             } catch (err) { alert("Save failed."); }
             finally { saveBtn.disabled = false; }
         };
     }
 
-    // --- 5. INITIALIZATION --- //
-    document.getElementById('adminSearchInput').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtered = (window.adminItems || []).filter(i => i.color.toLowerCase().includes(term));
-        renderAdminResults(filtered);
-    });
-
-    document.getElementById('name').addEventListener('input', (e) => {
-        const val = e.target.value.trim().toLowerCase();
-        const exists = (window.adminItems || []).some(item => item.color.toLowerCase() === val);
-        e.target.style.border = exists ? "2px solid #DC3545" : "1px solid #ccc";
-    });
-
-    document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
-
-    window.addEventListener("DOMContentLoaded", async () => {
-        await populateFinishDropdown();
-        await fetchForAdmin();
-    });
+    // --- 6. UTILITY & INIT ---
+    function renderDataList(query) {
+        const datalist = document.getElementById('existing-colors');
+        const nameInput = document.getElementById('name');
+        if (!datalist || !nameInput) return;
+        const cleanQuery = query.trim().toLowerCase();
+        if (cleanQuery.length < 2) {
+            datalist.innerHTML = '';
+            nameInput.style.border = "1px solid #ccc";
+            return;
+        }
+        const matches = (window.adminItems || []).filter(item => item.color.toLowerCase().includes(cleanQuery));
+        datalist.innerHTML = matches.map(item => `<option value="${item.color}">`).join('');
+        const exists = (window.adminItems || []).some(item => item.color.toLowerCase() === cleanQuery);
+        nameInput.style.border = exists ? "2px solid #DC3545" : "1px solid #ccc";
+    }
 
     async function deleteItem(id, name) {
         if (!confirm(`Are you sure you want to permanently delete "${name}"?`)) return;
@@ -379,6 +376,19 @@
             if (response.ok) fetchForAdmin();
         } catch (err) { alert("Delete failed."); }
     }
+
+    document.getElementById('name').addEventListener('input', (e) => renderDataList(e.target.value));
+    document.getElementById('adminSearchInput').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = (window.adminItems || []).filter(i => i.color.toLowerCase().includes(term));
+        renderAdminResults(filtered);
+    });
+    document.getElementById('adminRefreshBtn').addEventListener('click', fetchForAdmin);
+
+    window.addEventListener("DOMContentLoaded", async () => {
+        await populateFinishDropdown();
+        await fetchForAdmin();
+    });
 </script>
 
 <script src="js/footer.js"></script>
