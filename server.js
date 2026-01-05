@@ -91,15 +91,15 @@ app.post("/inventory", adminAuth, async (req, res) => {
 });
 
 app.patch('/inventory/:id', adminAuth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const idParam = parseInt(req.params.id);
     const updates = req.body;
 
-    console.log(`Applying updates to ID ${id}:`, updates);
+    console.log(`Applying updates to ID ${idParam}:`, updates);
 
     const { data, error } = await supabase
         .from('colors')
         .update(updates)
-        .eq('id', id)
+        .eq('id', idParam)
         .select();
 
     if (error) {
@@ -115,11 +115,11 @@ app.patch('/inventory/:id', adminAuth, async (req, res) => {
 });
 
 app.delete('/inventory/:id', adminAuth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const idParam = parseInt(req.params.id);
     const { error } = await supabase
         .from('colors')
         .delete()
-        .eq('id', id);
+        .eq('id', idParam);
 
     if (error) return res.status(400).json(error);
     res.json({ message: "Deleted successfully" });
