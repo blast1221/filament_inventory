@@ -99,7 +99,7 @@ app.patch('/inventory/:id', adminAuth, async (req, res) => {
     const { data, error } = await supabase
         .from('colors')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id)
         .select();
 
     if (error) {
