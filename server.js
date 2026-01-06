@@ -125,6 +125,23 @@ app.delete('/inventory/:id', adminAuth, async (req, res) => {
     res.json({ message: "Deleted successfully" });
 });
 
+app.post('/api/track-visit', async (req, res) => {
+    const { path } = req.body;
+    const userAgent = req.headers['user-agent'];
+    const { error } = await supabase
+        .from('site_traffic')
+        .insert([{
+            page_path: path,
+            user_agent: userAgent
+        }]);
+
+    if (error) {
+        console.error("Traffic tracking error:", error);
+        return res.status(500).end();
+    }
+    res.status(200).send("ok");
+});
+
 // Make sure the home page loads index.html
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
