@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#28A745">
     <meta name="application-name" content="Filament Admin">
-    <link rel="icon" href="Crafted 3D.ico" type="image/x-icon">
+    <link rel="icon" href="images/Crafted 3D.ico" type="image/x-icon">
     <title>Filament Admin - Multi-Color Entry</title>
     
     <style>
@@ -203,8 +203,8 @@
             finish: cleanFinish,
             description: document.getElementById('description').value,
             colorHex1: document.getElementById('text1').value || document.getElementById('picker1').value,
-            colorHex2: document.getElementById('text2').value || null,
-            colorHex3: document.getElementById('text3').value || null,
+            colorHex2: document.getElementById('text2').value || "",
+            colorHex3: document.getElementById('text3').value || "",
             inStock: true
         };        
 
@@ -227,7 +227,9 @@
                 await fetchForAdmin(); 
                 await populateFinishDropdown();
             } else {
-                alert("Upload failed.");
+                const errorData = await response.json();
+                alert("Upload failed: " + JSON.stringify(errorData));
+                console.error("Server says:", errorData);
             }
         } catch (err) { alert("Network error."); }
         finally { submitBtn.disabled = false; submitBtn.innerText = "Upload to Site"; }
