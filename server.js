@@ -14,14 +14,22 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            "default-src": ["'self'"],
+            "script-src": ["'self'", "'unsafe-inline'"],
+            "connect-src": ["'self'", "https://*.supabase.co", "https://filament-inventory.onrender.com"]
+        },
+    },
+}));
+
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-api-key']
 }));
 app.use(express.json());
-app.use(express.static(__dirname));
 
 const adminAuth = (req, res, next) => {
     const apiKey = req.headers['x-api-key'];
@@ -141,6 +149,8 @@ app.post('/api/track-visit', async (req, res) => {
     }
     res.status(200).send("ok");
 });
+
+app.use(express.static(__dirname));
 
 // Make sure the home page loads index.html
 app.get("/", (req, res) => {
