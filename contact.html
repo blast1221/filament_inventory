@@ -8,11 +8,11 @@
 
     <script src="https://web3forms.com/client/script.js" async defer></script>
     <script>
-        fetch('/api/track-visit', {
+        fetch('https://filament-inventory.onrender.com/api/track-visit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: window.location.pathname })
-        }).catch(() => {         });
+        }).catch(err => console.log("Tracking skipped"));
     </script>
 </head>
 

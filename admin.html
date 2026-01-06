@@ -10,11 +10,11 @@
     <link rel="icon" href="images/Crafted 3D.ico" type="image/x-icon">
     <title>Filament Admin - Multi-Color Entry</title>
     <script>
-        fetch('/api/track-visit', {
+        fetch('https://filament-inventory.onrender.com/api/track-visit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: window.location.pathname })
-        }).catch(() => {         });
+        }).catch(err => console.log("Tracking skipped"));
     </script>
     
     <style>

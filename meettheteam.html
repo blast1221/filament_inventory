@@ -11,11 +11,11 @@
     <h1>Crafted 3D Workshop</h1>
     <p class="slogan">A family legacy, one layer at a time.</p>
     <script>
-        fetch('/api/track-visit', {
+        fetch('https://filament-inventory.onrender.com/api/track-visit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ path: window.location.pathname })
-        }).catch(() => {         });
+        }).catch(err => console.log("Tracking skipped"));
     </script>
   </header>
 
