@@ -151,12 +151,16 @@ app.post('/api/track-visit', async (req, res) => {
 });
 
 app.get('.api/stats', adminAuth, async (req, res) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-api-key");
     try {
         const { count: total, error: err1 } = await supabase
             .from('site_traffic')
             .select('*', { count: 'exact', head: true });
 
-        const today = new Date().toISOString().split('T')[0];
+        const startOfDay = new Date();
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        
         const { count: todayCount, error: err2 } = await supabase
             .from('site_traffic')
             .select('*', { count: 'exact', head: true })
