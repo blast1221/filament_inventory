@@ -150,6 +150,27 @@ app.post('/api/track-visit', async (req, res) => {
     res.status(200).send("ok");
 });
 
+app.get('.api/stats', adminAuth, async (req, res) => {
+    try {
+        const { count: total, error: err1 } = await supabase
+            .from('site_traffic')
+            .select('*', { count: 'exact', head: true });
+
+        const today = new Date().toISOString().split('T')[0];
+        const { count: todayCount, error: err2 } = await supabase
+            .from('site_traffic')
+            .select('*', { count: 'exact', head: true })
+            .gte('visit_time', `${today}T00:00:00Z`);
+        
+        if (err1 || err2) throw new Error("Supabase fetch error");
+
+        res.json({ total: total || 0, today: todayCount || 0 });
+    }   catch (err) {
+        console.error("Stats Error:", err);
+        res.status(500).json({ error: "Could not load stats" });
+    }
+});
+
 app.use(express.static(__dirname));
 
 // Make sure the home page loads index.html

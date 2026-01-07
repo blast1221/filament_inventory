@@ -41,6 +41,25 @@
         .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
         .btn-cancel { background-color: #6c757d; }
         .btn-save { background-color: #007bff; }
+
+        #mobile-tracker {
+            display: none;
+            margin: 20px 0;
+            padding: 15px;
+            background: #1E293B;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 600px) {
+            #mobile-tracker { display: block; }
+        }
+
+        .stat-grid { display: flex; justify-content: space-around; margin-top: 10px; }
+        .stat-box { text-align: center; }
+        .stat-val { display: block; font-size: 22px; font-weight: bold; color: #4ADE80; }
+        .stat-lbl { font-size: 11px; text-transform: uppercase; color: #94A3B8; }
     </style>
 </head>
 
@@ -87,6 +106,18 @@
     <hr style="margin: 30px 0;">
     
     <h3>Manage Current Inventory</h3>
+    <div id="mobile-tracker">
+        <div class="stat-grid">
+            <div class="stat-box">
+                <span class="stat-val" id="stat-today">0</span>
+                <span class="stat-lbl">Today</span>
+            </div>
+            <div class="stat-box" style="border-left: 1px solid #334155; padding-left: 20px;">
+                <span class="stat-val" id="stat-total">0</span>
+                <span class="stat-lbl">Total Visits</span>
+            </div>
+        </div>
+    </div>
     <div class="admin-controls">
         <input type="text" id="adminSearchInput" placeholder="Search colors..." 
                style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 10px; box-sizing: border-box;">
@@ -318,6 +349,22 @@
         } catch (err) { alert("Stock update failed."); }
     }
 
+    async function loadMobileStats() {
+        if (window.innerWidth > 600) return;
+
+        try {
+            const response = await fetch('https://filament-inventory.onrender.com/api/stats', {
+                headers: { 'x-api-key': ADMIN_KEY }
+            });
+            const data = await response.json();
+
+            document.getElementById('stat-today').innerText = data.today;
+            document.getElementById('stat-total').innerText = data.total;
+        } catch (err) {
+            console.error("Stats failed to load");
+        }
+    }
+
     // --- 5. EDIT MODAL ---
     function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
@@ -411,6 +458,7 @@
     window.addEventListener("DOMContentLoaded", async () => {
         await populateFinishDropdown();
         await fetchForAdmin();
+        await loadMobileStats();
     });
 </script>
 
