@@ -150,7 +150,7 @@ app.post('/api/track-visit', async (req, res) => {
     res.status(200).send("ok");
 });
 
-app.get('api/stats', adminAuth, async (req, res) => {
+app.get('/api/stats', adminAuth, async (req, res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-api-key");
     try {
@@ -168,7 +168,7 @@ app.get('api/stats', adminAuth, async (req, res) => {
         const { count: todayCount, error: err2 } = await supabase
             .from('site_traffic')
             .select('*', { count: 'exact', head: true })
-            .gte('visit_time', `${today}T00:00:00Z`);
+            .gte('visit_time', queryStart);
         
         if (err1 || err2) throw new Error("Supabase fetch error");
 
