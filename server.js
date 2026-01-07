@@ -150,7 +150,7 @@ app.post('/api/track-visit', async (req, res) => {
     res.status(200).send("ok");
 });
 
-app.get('.api/stats', adminAuth, async (req, res) => {
+app.get('api/stats', adminAuth, async (req, res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-api-key");
     try {
@@ -158,9 +158,13 @@ app.get('.api/stats', adminAuth, async (req, res) => {
             .from('site_traffic')
             .select('*', { count: 'exact', head: true });
 
-        const startOfDay = new Date();
-        startOfDay.setUTCHours(0, 0, 0, 0);
-        
+        const now = new Date();
+        const centralOffset = -6;
+
+        const todayCST = new Date(now.getTime() + (centralOffset * 60 *60 * 1000));
+        todayCST.setUTCHours(0, 0, 0, 0);
+        const queryStart = new Date(todayCST.getTime() - (centralOffset *60 * 60 * 1000));
+
         const { count: todayCount, error: err2 } = await supabase
             .from('site_traffic')
             .select('*', { count: 'exact', head: true })
@@ -169,9 +173,10 @@ app.get('.api/stats', adminAuth, async (req, res) => {
         if (err1 || err2) throw new Error("Supabase fetch error");
 
         res.json({ total: total || 0, today: todayCount || 0 });
+    
     }   catch (err) {
         console.error("Stats Error:", err);
-        res.status(500).json({ error: "Could not load stats" });
+        res.status(500).json({ error: err.message });
     }
 });
 
