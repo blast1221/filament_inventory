@@ -163,7 +163,7 @@ app.get('/api/stats', adminAuth, async (req, res) => {
 
         const todayCST = new Date(now.getTime() + (centralOffset * 60 *60 * 1000));
         todayCST.setUTCHours(0, 0, 0, 0);
-        const queryStart = new Date(todayCST.getTime() - (centralOffset *60 * 60 * 1000));
+        const queryStart = new Date(todayCST.getTime() - (centralOffset *60 * 60 * 1000)).toISOString();
 
         const { count: todayCount, error: err2 } = await supabase
             .from('site_traffic')
