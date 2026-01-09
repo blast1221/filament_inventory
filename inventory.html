@@ -5,13 +5,6 @@
     <title> C3DW | Filament Inventory</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="Crafted 3D.ico" type="image/x-icon">
-    <script>
-        fetch('https://filament-inventory.onrender.com/api/track-visit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ path: window.location.pathname })
-        }).catch(err => console.log("Tracking skipped"));
-    </script>
 </head>
 <body>
     <header>
