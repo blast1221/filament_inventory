@@ -151,10 +151,12 @@ footer {
 }
 
 .gallery-item p {
-  font-family: "Courier New", monospace;
-  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
   text-align: center;
-  margin-top: 6px;
+  margin-top: 12px;
 }
 
 .gallery-item {

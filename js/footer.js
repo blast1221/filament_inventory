@@ -1,4 +1,4 @@
-const currentVersion = "1.7.0";
+const currentVersion = "1.8.0";
 
 function injectTracker() {
     const script = document.createElement('script');
